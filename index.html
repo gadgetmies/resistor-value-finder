@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voltage Divider Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Voltage Divider Calculator</h1>
+        </header>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="resistor-finder">Resistor Finder</button>
+                <button class="tab-button" data-tab="calculator">Calculator</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="resistor-finder" class="tab-pane active">
+                    <div class="resistor-search">
+                        <h3>Find Standard Resistor Values</h3>
+                        <p>Enter your desired input and output voltages to find the best standard resistor combinations</p>
+                        
+                        <div class="search-controls">
+                            <div class="search-input-group">
+                                <label for="searchVin">Target Input Voltage:</label>
+                                <input type="number" id="searchVin" step="0.1" min="0" max="100" value="12" placeholder="e.g., 12">
+                                <span class="unit">V</span>
+                            </div>
+                            
+                            <div class="search-input-group">
+                                <label for="searchVout">Target Output Voltage:</label>
+                                <input type="number" id="searchVout" step="0.1" min="0" max="100" value="5" placeholder="e.g., 5">
+                                <span class="unit">V</span>
+                            </div>
+                            
+                            <div class="search-input-group">
+                                <label for="targetResistance">Target Total Resistance (optional):</label>
+                                <div class="input-with-unit-horizontal">
+                                    <input type="number" id="targetResistance" step="0.1" min="1" max="1000" placeholder="e.g., 20">
+                                    <select id="targetResistanceUnit" class="unit-select">
+                                        <option value="Ω">Ω</option>
+                                        <option value="kΩ" selected>kΩ</option>
+                                        <option value="MΩ">MΩ</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="search-input-group">
+                                <label for="resistorSeries">Resistor Series:</label>
+                                <select id="resistorSeries">
+                                    <option value="E12">E12 (10% tolerance)</option>
+                                    <option value="E24" selected>E24 (5% tolerance)</option>
+                                    <option value="E48">E48 (2% tolerance)</option>
+                                    <option value="E96">E96 (1% tolerance)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="searchResistors" class="search-button">Find Best Resistors</button>
+                        </div>
+                        
+                        <div class="search-results" id="searchResults" style="display: none;">
+                            <h4>Best Resistor Combinations</h4>
+                            <div class="results-table">
+                                <div class="table-header">
+                                    <span>R1</span>
+                                    <span>R2</span>
+                                    <span>Total R</span>
+                                    <span>Actual Vout</span>
+                                    <span>Req. Vin</span>
+                                    <span>Error</span>
+                                    <span>Accuracy</span>
+                                </div>
+                                <div class="results-list" id="resultsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="calculator" class="tab-pane">
+                    <div class="calculator">
+                        <div class="circuit-diagram">
+                            <svg width="300" height="200" viewBox="0 0 300 200">
+                                <!-- Input voltage source -->
+                                <circle cx="50" cy="50" r="20" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="55" text-anchor="middle" font-size="12">Vin</text>
+                                
+                                <!-- R1 -->
+                                <rect x="100" y="40" width="60" height="20" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="130" y="53" text-anchor="middle" font-size="10">R1</text>
+                                
+                                <!-- R2 -->
+                                <rect x="100" y="120" width="60" height="20" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="130" y="133" text-anchor="middle" font-size="10">R2</text>
+                                
+                                <!-- Output voltage -->
+                                <circle cx="200" cy="80" r="15" fill="none" stroke="#333" stroke-width="2"/>
+                                <text x="200" y="85" text-anchor="middle" font-size="10">Vout</text>
+                                
+                                <!-- Ground -->
+                                <line x1="130" y1="140" x2="130" y2="160" stroke="#333" stroke-width="2"/>
+                                <line x1="120" y1="160" x2="140" y2="160" stroke="#333" stroke-width="2"/>
+                                <line x1="125" y1="165" x2="135" y2="165" stroke="#333" stroke-width="2"/>
+                                <line x1="127" y1="170" x2="133" y2="170" stroke="#333" stroke-width="2"/>
+                                
+                                <!-- Connecting lines -->
+                                <line x1="70" y1="50" x2="100" y2="50" stroke="#333" stroke-width="2"/>
+                                <line x1="160" y1="50" x2="185" y2="50" stroke="#333" stroke-width="2"/>
+                                <line x1="160" y1="130" x2="185" y2="130" stroke="#333" stroke-width="2"/>
+                                <line x1="200" y1="65" x2="200" y2="95" stroke="#333" stroke-width="2"/>
+                                <line x1="130" y1="60" x2="130" y2="120" stroke="#333" stroke-width="2"/>
+                            </svg>
+                        </div>
+
+                        <div class="controls">
+                            <div class="calculation-mode">
+                                <label for="calcMode">Calculate:</label>
+                                <select id="calcMode">
+                                    <option value="vout">Output Voltage (Vout)</option>
+                                    <option value="vin">Input Voltage (Vin)</option>
+                                    <option value="r1">Resistor R1</option>
+                                    <option value="r2">Resistor R2</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="vin">Input Voltage (Vin):</label>
+                                <div class="input-with-slider">
+                                    <input type="number" id="vin" step="0.1" min="0" max="100" value="12">
+                                    <span class="unit">V</span>
+                                    <input type="range" id="vinSlider" min="0" max="100" step="0.1" value="12">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="vout">Output Voltage (Vout):</label>
+                                <div class="input-with-slider">
+                                    <input type="number" id="vout" step="0.1" min="0" max="100" value="6">
+                                    <span class="unit">V</span>
+                                    <input type="range" id="voutSlider" min="0" max="100" step="0.1" value="6">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="r1">Resistor R1:</label>
+                                <div class="input-with-unit-horizontal">
+                                    <input type="number" id="r1" step="0.1" min="1" max="1000" value="10">
+                                    <select id="r1Unit" class="unit-select">
+                                        <option value="Ω">Ω</option>
+                                        <option value="kΩ" selected>kΩ</option>
+                                        <option value="MΩ">MΩ</option>
+                                    </select>
+                                </div>
+                                <input type="range" id="r1Slider" min="1" max="1000" step="0.1" value="10">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="r2">Resistor R2:</label>
+                                <div class="input-with-unit-horizontal">
+                                    <input type="number" id="r2" step="0.1" min="1" max="1000" value="10">
+                                    <select id="r2Unit" class="unit-select">
+                                        <option value="Ω">Ω</option>
+                                        <option value="kΩ" selected>kΩ</option>
+                                        <option value="MΩ">MΩ</option>
+                                    </select>
+                                </div>
+                                <input type="range" id="r2Slider" min="1" max="1000" step="0.1" value="10">
+                            </div>
+
+                            <div class="results">
+                                <div class="result-item">
+                                    <span class="result-label">Voltage Division Ratio:</span>
+                                    <span id="ratio" class="result-value">0.5</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Total Resistance:</span>
+                                    <span id="totalResistance" class="result-value">20,000 Ω</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Current:</span>
+                                    <span id="current" class="result-value">0.6 mA</span>
+                                </div>
+                            </div>
+
+                            <div class="error-message" id="errorMessage" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="formula">
+                        <h3>Voltage Divider Formula</h3>
+                        <div class="formula-display">
+                            V<sub>out</sub> = V<sub>in</sub> × (R<sub>2</sub> / (R<sub>1</sub> + R<sub>2</sub>))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

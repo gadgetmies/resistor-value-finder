@@ -24,6 +24,12 @@ class VoltageDividerCalculator {
         this.r1Slider = document.getElementById('r1Slider');
         this.r2Slider = document.getElementById('r2Slider');
         
+        // Fine-tuning slider elements
+        this.vinFineTuneSlider = document.getElementById('vinFineTune');
+        this.voutFineTuneSlider = document.getElementById('voutFineTune');
+        this.r1FineTuneSlider = document.getElementById('r1FineTune');
+        this.r2FineTuneSlider = document.getElementById('r2FineTune');
+        
         // Other elements
         this.calcModeSelect = document.getElementById('calcMode');
         this.errorMessage = document.getElementById('errorMessage');
@@ -87,6 +93,24 @@ class VoltageDividerCalculator {
         });
         this.r2Slider.addEventListener('input', () => {
             this.handleSliderChange('r2');
+            this.saveToStorage();
+        });
+
+        // Fine-tuning slider listeners
+        this.vinFineTuneSlider.addEventListener('input', () => {
+            this.handleFineTuneChange('vin');
+            this.saveToStorage();
+        });
+        this.voutFineTuneSlider.addEventListener('input', () => {
+            this.handleFineTuneChange('vout');
+            this.saveToStorage();
+        });
+        this.r1FineTuneSlider.addEventListener('input', () => {
+            this.handleFineTuneChange('r1');
+            this.saveToStorage();
+        });
+        this.r2FineTuneSlider.addEventListener('input', () => {
+            this.handleFineTuneChange('r2');
             this.saveToStorage();
         });
 
@@ -163,6 +187,7 @@ class VoltageDividerCalculator {
     handleInputChange(type) {
         const input = this[`${type}Input`];
         const slider = this[`${type}Slider`];
+        const fineTuneSlider = this[`${type}FineTuneSlider`];
         
         if (type === 'r1' || type === 'r2') {
             // For resistors, slider now uses display values directly
@@ -170,6 +195,11 @@ class VoltageDividerCalculator {
         } else {
             // For voltages, direct assignment
             slider.value = input.value;
+        }
+        
+        // Reset fine-tuning slider when input changes
+        if (fineTuneSlider) {
+            fineTuneSlider.value = 0;
         }
         
         // Validate and update calculations
@@ -189,6 +219,36 @@ class VoltageDividerCalculator {
         } else {
             // For voltages, direct assignment
             input.value = slider.value;
+        }
+        
+        // Reset fine-tuning slider when main slider changes
+        const fineTuneSlider = this[`${type}FineTuneSlider`];
+        if (fineTuneSlider) {
+            fineTuneSlider.value = 0;
+        }
+        
+        // Update calculations
+        this.updateCalculations();
+    }
+
+    handleFineTuneChange(type) {
+        const input = this[`${type}Input`];
+        const mainSlider = this[`${type}Slider`];
+        const fineTuneSlider = this[`${type}FineTuneSlider`];
+        
+        if (!input || !mainSlider || !fineTuneSlider) return;
+        
+        const baseValue = parseFloat(mainSlider.value) || 0;
+        const fineTuneValue = parseFloat(fineTuneSlider.value) || 0;
+        
+        if (type === 'r1' || type === 'r2') {
+            // For resistors, apply percentage-based fine-tuning
+            const adjustedValue = baseValue * (1 + fineTuneValue);
+            input.value = adjustedValue.toFixed(3);
+        } else {
+            // For voltages, apply direct fine-tuning
+            const adjustedValue = baseValue + fineTuneValue;
+            input.value = adjustedValue.toFixed(2);
         }
         
         // Update calculations
@@ -715,6 +775,12 @@ class VoltageDividerCalculator {
             r2Unit: this.r2UnitSelect?.value || 'kΩ',
             calcMode: this.calcMode,
             
+            // Fine-tuning slider values
+            vinFineTune: this.vinFineTuneSlider?.value || '0',
+            voutFineTune: this.voutFineTuneSlider?.value || '0',
+            r1FineTune: this.r1FineTuneSlider?.value || '0',
+            r2FineTune: this.r2FineTuneSlider?.value || '0',
+            
             // Search values
             searchVin: this.searchVinInput?.value || '',
             searchVout: this.searchVoutInput?.value || '',
@@ -768,6 +834,20 @@ class VoltageDividerCalculator {
             if (data.calcMode && this.calcModeSelect) {
                 this.calcMode = data.calcMode;
                 this.calcModeSelect.value = data.calcMode;
+            }
+            
+            // Restore fine-tuning slider values
+            if (data.vinFineTune && this.vinFineTuneSlider) {
+                this.vinFineTuneSlider.value = data.vinFineTune;
+            }
+            if (data.voutFineTune && this.voutFineTuneSlider) {
+                this.voutFineTuneSlider.value = data.voutFineTune;
+            }
+            if (data.r1FineTune && this.r1FineTuneSlider) {
+                this.r1FineTuneSlider.value = data.r1FineTune;
+            }
+            if (data.r2FineTune && this.r2FineTuneSlider) {
+                this.r2FineTuneSlider.value = data.r2FineTune;
             }
             
             // Restore search values

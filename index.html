@@ -59,6 +59,26 @@
                                 </select>
                             </div>
                             
+                            <div class="search-resistor-configuration">
+                                <div class="search-config-group">
+                                    <label for="searchR1Config">Resistors connected to input:</label>
+                                    <select id="searchR1Config">
+                                        <option value="single">Single resistor</option>
+                                        <option value="series">Two in series</option>
+                                        <option value="parallel">Two in parallel</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="search-config-group">
+                                    <label for="searchR2Config">Resistors connected to ground:</label>
+                                    <select id="searchR2Config">
+                                        <option value="single">Single resistor</option>
+                                        <option value="series">Two in series</option>
+                                        <option value="parallel">Two in parallel</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
                             <button id="searchResistors" class="search-button">Find Best Resistors</button>
                         </div>
                         
@@ -126,6 +146,7 @@
                                 </select>
                             </div>
 
+
                             <div class="input-group">
                                 <label for="vin">Input Voltage (Vin):</label>
                                 <div class="input-with-slider">
@@ -183,6 +204,41 @@
                                 <div class="fine-tuning-slider">
                                     <label for="r2FineTune">Fine Tune (±1%):</label>
                                     <input type="range" id="r2FineTune" min="-0.01" max="0.01" step="0.001" value="0">
+                                </div>
+                            </div>
+
+                            <!-- Additional resistor inputs for series/parallel configurations -->
+                            <div class="input-group" id="r1bGroup" style="display: none;">
+                                <label for="r1b">Resistor R1b:</label>
+                                <div class="input-with-unit-horizontal">
+                                    <input type="number" id="r1b" step="0.1" min="1" max="1000" value="10">
+                                    <select id="r1bUnit" class="unit-select">
+                                        <option value="Ω">Ω</option>
+                                        <option value="kΩ" selected>kΩ</option>
+                                        <option value="MΩ">MΩ</option>
+                                    </select>
+                                </div>
+                                <input type="range" id="r1bSlider" min="1" max="1000" step="0.1" value="10">
+                                <div class="fine-tuning-slider">
+                                    <label for="r1bFineTune">Fine Tune (±1%):</label>
+                                    <input type="range" id="r1bFineTune" min="-0.01" max="0.01" step="0.001" value="0">
+                                </div>
+                            </div>
+
+                            <div class="input-group" id="r2bGroup" style="display: none;">
+                                <label for="r2b">Resistor R2b:</label>
+                                <div class="input-with-unit-horizontal">
+                                    <input type="number" id="r2b" step="0.1" min="1" max="1000" value="10">
+                                    <select id="r2bUnit" class="unit-select">
+                                        <option value="Ω">Ω</option>
+                                        <option value="kΩ" selected>kΩ</option>
+                                        <option value="MΩ">MΩ</option>
+                                    </select>
+                                </div>
+                                <input type="range" id="r2bSlider" min="1" max="1000" step="0.1" value="10">
+                                <div class="fine-tuning-slider">
+                                    <label for="r2bFineTune">Fine Tune (±1%):</label>
+                                    <input type="range" id="r2bFineTune" min="-0.01" max="0.01" step="0.001" value="0">
                                 </div>
                             </div>
 

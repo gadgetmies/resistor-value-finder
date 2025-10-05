@@ -148,6 +148,44 @@ header h1 {
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
+.resistor-configuration {
+    background: #fff3cd;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #ffc107;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.config-group label {
+    font-weight: 600;
+    color: #856404;
+    font-size: 0.95rem;
+}
+
+.config-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ffeaa7;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.config-group select:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
 .input-group {
     background: white;
     padding: 20px;
@@ -498,6 +536,11 @@ header h1 {
         font-size: 0.9rem;
     }
     
+    .resistor-configuration {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
     .input-with-slider {
         flex-direction: column;
         align-items: stretch;
@@ -631,6 +674,45 @@ header h1 {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-resistor-configuration {
+    background: #fff3cd;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #ffc107;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    grid-column: 1 / -1;
+}
+
+.search-config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-config-group label {
+    font-weight: 600;
+    color: #856404;
+    font-size: 0.95rem;
+}
+
+.search-config-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ffeaa7;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.search-config-group select:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
 }
 
 .search-input-group .unit {
@@ -783,6 +865,11 @@ header h1 {
 /* Responsive design for search section */
 @media (max-width: 768px) {
     .search-controls {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .search-resistor-configuration {
         grid-template-columns: 1fr;
         gap: 15px;
     }

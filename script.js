@@ -381,19 +381,148 @@ class VoltageDividerCalculator {
     updateCircuitDiagram() {
         const svg = document.querySelector('.circuit-diagram svg');
         if (!svg) return;
-        
+
+        // Completely redraw schematic each time
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+        // Canvas setup
+        const width = 420;
+        const height = 300;
+        svg.setAttribute('width', String(width));
+        svg.setAttribute('height', String(height));
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
         const r1Config = this.searchR1ConfigSelect?.value || 'single';
         const r2Config = this.searchR2ConfigSelect?.value || 'single';
-        
-        // Clear existing resistor elements
-        const existingResistors = svg.querySelectorAll('.resistor');
-        existingResistors.forEach(el => el.remove());
-        
-        // Add R1 resistors based on configuration
-        this.addResistorToDiagram(svg, 'r1', r1Config, 100, 40);
-        
-        // Add R2 resistors based on configuration
-        this.addResistorToDiagram(svg, 'r2', r2Config, 100, 120);
+
+        // Geometry
+        const xBus = 160; // vertical bus x
+        const yTop = 40;  // top start (Vin)
+        const yNode = 140; // node between R1 and R2
+        const yBottom = 260; // ground baseline
+        const colGap = 28; // gap between parallel columns
+
+        // Helpers
+        const make = (name, attrs) => {
+            const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+            Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+            return el;
+        };
+        const stroke = { fill: 'none', stroke: '#333', 'stroke-width': 2 };
+
+        // Vin source (circle)
+        const vinCircle = make('circle', { cx: xBus - 70, cy: yTop, r: 18, ...stroke });
+        svg.appendChild(vinCircle);
+        const vinText = make('text', { x: xBus - 70, y: yTop + 4, 'text-anchor': 'middle', 'font-size': 12 });
+        vinText.textContent = 'Vin';
+        svg.appendChild(vinText);
+
+        // Wire from Vin to bus top
+        svg.appendChild(make('line', { x1: xBus - 52, y1: yTop, x2: xBus, y2: yTop, ...stroke }));
+
+        // No continuous vertical bus; connections are drawn only where needed
+
+        // Draw R1 branch between yTop and yNode (vertical)
+        const drawSeriesStack = (xCenter, yStart, yEnd, count, labelBase) => {
+            const span = yEnd - yStart;
+            const unit = span / count;
+            const rectTops = [];
+            const rectBottoms = [];
+            for (let i = 0; i < count; i++) {
+                const yRect = yStart + i * unit + unit * 0.25;
+                const rect = make('rect', { x: xCenter - 18, y: yRect, width: 36, height: unit * 0.5, ...stroke });
+                rect.classList.add('resistor');
+                svg.appendChild(rect);
+                const t = make('text', { x: xCenter, y: yRect + unit * 0.5 - 4, 'text-anchor': 'middle', 'font-size': 9 });
+                t.textContent = `${labelBase}${i === 0 ? 'a' : 'b'}`;
+                svg.appendChild(t);
+                rectTops.push(yRect);
+                rectBottoms.push(yRect + unit * 0.5);
+            }
+            // connection wires above first and below last
+            const firstTop = rectTops[0];
+            const lastBottom = rectBottoms[rectBottoms.length - 1];
+            svg.appendChild(make('line', { x1: xCenter, y1: yStart, x2: xCenter, y2: firstTop, ...stroke }));
+            svg.appendChild(make('line', { x1: xCenter, y1: lastBottom, x2: xCenter, y2: yEnd, ...stroke }));
+            // links between series elements
+            for (let i = 0; i < count - 1; i++) {
+                svg.appendChild(make('line', { x1: xCenter, y1: rectBottoms[i], x2: xCenter, y2: rectTops[i + 1], ...stroke }));
+            }
+        };
+
+        const drawParallelPair = (xCenter, yStart, yEnd, labelBase) => {
+            const xLeft = xCenter - colGap;
+            const xRight = xCenter + colGap;
+            const rectH = (yEnd - yStart) * 0.6;
+            const yRect = yStart + ((yEnd - yStart) - rectH) / 2;
+
+            // left
+            const rL = make('rect', { x: xLeft - 18, y: yRect, width: 36, height: rectH, ...stroke });
+            rL.classList.add('resistor');
+            svg.appendChild(rL);
+            const tL = make('text', { x: xLeft, y: yRect + rectH / 2 + 3, 'text-anchor': 'middle', 'font-size': 9 });
+            tL.textContent = `${labelBase}a`;
+            svg.appendChild(tL);
+
+            // right
+            const rR = make('rect', { x: xRight - 18, y: yRect, width: 36, height: rectH, ...stroke });
+            rR.classList.add('resistor');
+            svg.appendChild(rR);
+            const tR = make('text', { x: xRight, y: yRect + rectH / 2 + 3, 'text-anchor': 'middle', 'font-size': 9 });
+            tR.textContent = `${labelBase}b`;
+            svg.appendChild(tR);
+
+            // tie top and bottom to bus
+            svg.appendChild(make('line', { x1: xLeft, y1: yStart, x2: xLeft, y2: yRect, ...stroke }));
+            svg.appendChild(make('line', { x1: xRight, y1: yStart, x2: xRight, y2: yRect, ...stroke }));
+            svg.appendChild(make('line', { x1: xLeft, y1: yRect + rectH, x2: xLeft, y2: yEnd, ...stroke }));
+            svg.appendChild(make('line', { x1: xRight, y1: yRect + rectH, x2: xRight, y2: yEnd, ...stroke }));
+
+            // jumpers to bus center
+            svg.appendChild(make('line', { x1: xLeft, y1: yStart, x2: xBus, y2: yStart, ...stroke }));
+            svg.appendChild(make('line', { x1: xRight, y1: yStart, x2: xBus, y2: yStart, ...stroke }));
+            svg.appendChild(make('line', { x1: xLeft, y1: yEnd, x2: xBus, y2: yEnd, ...stroke }));
+            svg.appendChild(make('line', { x1: xRight, y1: yEnd, x2: xBus, y2: yEnd, ...stroke }));
+        };
+
+        // R1
+        if (r1Config === 'single') {
+            drawSeriesStack(xBus, yTop, yNode, 1, 'R1');
+        } else if (r1Config === 'series') {
+            drawSeriesStack(xBus, yTop, yNode, 2, 'R1');
+        } else { // parallel
+            drawParallelPair(xBus, yTop, yNode, 'R1');
+        }
+
+        // Node marker (for clarity)
+        const nodeDot = make('circle', { cx: xBus, cy: yNode, r: 3, fill: '#333' });
+        svg.appendChild(nodeDot);
+
+        // Vout: horizontal from top of first R2 resistor (node)
+        const voutX = xBus + 140;
+        svg.appendChild(make('line', { x1: xBus, y1: yNode, x2: voutX - 22, y2: yNode, ...stroke }));
+        const voutCircle = make('circle', { cx: voutX, cy: yNode, r: 14, ...stroke });
+        svg.appendChild(voutCircle);
+        const voutText = make('text', { x: voutX, y: yNode + 4, 'text-anchor': 'middle', 'font-size': 10 });
+        voutText.textContent = 'Vout';
+        svg.appendChild(voutText);
+
+        // R2 branch between node and ground
+        if (r2Config === 'single') {
+            drawSeriesStack(xBus, yNode, yBottom - 24, 1, 'R2');
+        } else if (r2Config === 'series') {
+            drawSeriesStack(xBus, yNode, yBottom - 24, 2, 'R2');
+        } else {
+            drawParallelPair(xBus, yNode, yBottom - 24, 'R2');
+        }
+
+        // Ground symbol
+        const gY = yBottom;
+        // Connect branch bottom to ground
+        svg.appendChild(make('line', { x1: xBus, y1: yBottom - 24, x2: xBus, y2: gY - 2, ...stroke }));
+        svg.appendChild(make('line', { x1: xBus - 14, y1: gY, x2: xBus + 14, y2: gY, ...stroke }));
+        svg.appendChild(make('line', { x1: xBus - 10, y1: gY + 6, x2: xBus + 10, y2: gY + 6, ...stroke }));
+        svg.appendChild(make('line', { x1: xBus - 6, y1: gY + 11, x2: xBus + 6, y2: gY + 11, ...stroke }));
     }
 
     addResistorToDiagram(svg, resistorType, config, x, y) {
